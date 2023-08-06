@@ -1,0 +1,20 @@
+name: deployment
+
+# Only trigger, when the build workflow succeeded
+on:
+  workflow_run:
+    workflows: ["integration"]
+    types:
+      - completed
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull Docker Image
+        run: sudo docker pull ${{ secrets.DOCKER_USER_NAME }}/titanic-fastapi:latest
+      - name: Delete Old Docker Container
+        run: sudo docker rm -f titanic-fastapi-container || true
+      - name: Run Docker Container
+        run: sudo docker run -d -p 8080:8080 --name titanic-fastapi-container ${{ secrets.DOCKER_USER_NAME }}/titanic-fastapi
